@@ -1,13 +1,14 @@
 FROM alpine:3.18
 
-# Install SQLite and Python/pip for sqlite-web
-RUN apk add --no-cache \
-    sqlite \
-    python3 \
-    py3-pip
+# Install required packages
+RUN apk add --no-cache sqlite wget
 
-# Install sqlite-web
-RUN pip3 install sqlite-web
+# Install rqlite
+RUN wget https://github.com/rqlite/rqlite/releases/download/v7.21.4/rqlite-v7.21.4-linux-amd64.tar.gz && \
+    tar xvfz rqlite-v7.21.4-linux-amd64.tar.gz && \
+    cp rqlite-v7.21.4-linux-amd64/rqlited /usr/local/bin/ && \
+    cp rqlite-v7.21.4-linux-amd64/rqlite /usr/local/bin/ && \
+    rm -rf rqlite-v7.21.4-linux-amd64*
 
 # Create directory for database files
 RUN mkdir -p /data/db && \
@@ -16,8 +17,8 @@ RUN mkdir -p /data/db && \
 # Set working directory
 WORKDIR /data/db
 
-# Expose port for sqlite-web
-EXPOSE 8080
+# Expose rqlite ports
+EXPOSE 4001 4002
 
-# Start sqlite-web server
-CMD ["sqlite_web", "--host", "0.0.0.0", "--port", "8080", "/data/db/database.db"]
+# Start rqlite with proper network configuration
+CMD ["rqlited", "-http-addr", "0.0.0.0:4001", "-http-adv-addr", "localhost:4001", "-raft-addr", "0.0.0.0:4002", "-raft-adv-addr", "localhost:4002", "/data/db"]
