@@ -16,9 +16,6 @@ RUN mkdir -p /data/db && \
 # Set working directory
 WORKDIR /data/db
 
-# Volume for database files
-VOLUME ["/data/db"]
-
 # Expose port for sqlite-web
 EXPOSE 8080
 
